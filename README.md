@@ -1,4 +1,4 @@
-* PBS qsub wrapper *
+# PBS qsub wrapper
 
 This script performs some checks on PBS job scripts to reject jobs with known errors or jobs which break site policy.
 
