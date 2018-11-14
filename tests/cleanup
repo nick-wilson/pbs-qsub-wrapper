@@ -1,0 +1,5 @@
+#!/bin/sh
+
+if [ x"$QDEL" != x ] ; then module load python && qdel-all ; sleep 4 ; fi
+
+mv  *.[eo][0-9]*[0-9] ~/pbs/

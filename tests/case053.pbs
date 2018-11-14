@@ -1,0 +1,7 @@
+#PBS -N cBB2006
+#PBS -q normal
+#PBS -l nodes=10:ncpus=24
+#PBS -l walltime=120:00:00
+#PBS -r n
+#PBS -j oe
+#PBS -S /bin/csh -V

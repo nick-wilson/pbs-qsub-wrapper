@@ -1,0 +1,6 @@
+#!/bin/sh
+#PBS -N Pure3
+#PBS -l nodes=4:ppn=12
+#PBS -l walltime=14:00:00
+#PBS -l mem=160GB
+#PBS -j oe

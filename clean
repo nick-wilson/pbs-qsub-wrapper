@@ -1,0 +1,58 @@
+#!/bin/sh
+
+owner=fsg3.nscc-proj
+
+archive_dir="/app/nsccadmin/log/printjob"
+
+# navigate to where the scripts are being stored
+cd `dirname "$0"` || exit $?
+cd ../log || exit $?
+
+pwd
+
+log_today="../log-"`date +%Y-%m-%d`
+mkdir -p "$log_today"
+chgrp nscc-proj "$log_today"
+chmod 0750 "$log_today"
+
+ls noid.* > /dev/null 2>&1 && chown $owner noid.* && chmod 0640 noid.* && mv -v noid.* "$log_today/"
+
+for f in * ; do
+echo analyzing $f
+ id="${f/.*/}"
+ a="${id/[]/}"
+ ((a=a/10000))
+ if [ ! -f "$archive_dir/$a/$id" ] ; then
+#### parsing script is now not done by printjob cron so disabling here as well
+#### integrate into workflow for application statistics generation
+###  cp -v "$f" "$id" && \
+###  /app/nsccadmin/apps/printjob/bin/appstats-parse-script "$id" >> "$archive_dir/$a.csv" && \
+  cp -v "$f" "$id" && \
+   if [ ! -d "$archive_dir/$a" ] ; then mkdir "$archive_dir/$a" ; fi && \
+   mv -v "$id" "$archive_dir/$a/" && \
+   chown $owner "$archive_dir/$a.csv" "$archive_dir/$a" "$archive_dir/$a/$id" && \
+   chmod 0750  "$archive_dir/$a" && \
+   chmod 0640  "$archive_dir/$a.csv" "$archive_dir/$a/$id"
+ fi
+mv -vf "$f" "$log_today"
+chgrp nscc-proj "$log_today/$f"
+chmod 0640 "$log_today/$f"
+done
+
+# delete old scripts from this day last month
+y=`date +%Y`
+m=`date +%m`
+d=`date +%d`
+m=${m#0}
+if [ $m -eq 1 ] ; then ((m=13)) ; ((y=y-1)) ; fi
+((m=m-1))
+rm -rf ../log-${y}-${m}-${d}
+
+# delete old scripts for any remaining days at end of previous months
+y=`date +%Y`
+m=`date +%m`
+m=${m#0}
+if [ $m -le 2 ] ; then ((m=m+12)) ; ((y=y-1)) ; fi
+((m=m-2))
+if [ $m -lt 10 ] ; then m=0$m ; fi
+rm -rf ../log-${y}-${m}-[0-9][0-9]

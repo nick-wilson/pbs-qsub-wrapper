@@ -1,0 +1,199 @@
+#!/bin/sh
+export QSUB_COMMAND=${QSUB_COMMAND:-"true -- "}
+qsub=${QSUB:-../qsub}
+project="-P90000001"
+echo ===
+echo PASS: dev: 1 core for 1 minute
+$qsub $project case000.pbs || exit
+echo OK
+echo ===
+echo XFAIL: core count in job script
+$qsub $project case010.pbs && exit
+echo OK
+echo ===
+echo XFAIL: ncpus greater than 24 on command line
+$qsub $project -l select=1:ncpus=25 < /dev/null && exit
+echo OK
+echo ===
+echo XFAIL: ncpus greater than 24 in stdin
+echo '#PBS -l select=1:ncpus=25,walltime=0:10:00' | $qsub $project && exit
+echo OK
+echo ===
+echo PASS: ncpus greater than 24 in stdin, ncpus=24 on command line
+echo '#PBS -l select=1:ncpus=25,walltime=0:10:00' | $qsub $project -l select=1:ncpus=24 || exit
+echo OK
+echo ===
+echo PASS: mpiprocs greater than ncpus for full node
+echo '#PBS -l select=1:ncpus=24:mpiprocs=25,walltime=0:10:00' | $qsub $project || exit
+echo OK
+echo ===
+echo XFAIL: mpiprocs greater than ncpus for partial node
+$qsub $project -l select=1:ncpus=23:mpiprocs=24,walltime=0:10:00 < /dev/null && exit
+echo OK
+echo ===
+echo PASS: ngpus=1 in gpu queue
+$qsub $project -q gpu -l select=1:ncpus=24:ngpus=1,walltime=0:10:00 < /dev/null || exit
+echo OK
+echo ===
+echo XFAIL: gpu in normal queue
+$qsub $project -q normal -l select=1:ncpus=24:ngpus=1,walltime=0:10:00 < /dev/null && exit
+echo OK
+echo ===
+echo XFAIL: ngpus greater than 1
+$qsub $project -q gpu -l select=1:ncpus=24:ngpus=2,walltime=0:10:00 < /dev/null && exit
+echo OK
+echo ===
+echo PASS: memory in job script
+$qsub $project case050.pbs || exit
+echo OK
+echo ===
+echo WARN: memory per core too high in job script
+$qsub $project case051.pbs || exit
+echo OK
+echo ===
+echo FAIL: memory too high on compute nodes
+$qsub $project case052.pbs && exit
+echo OK
+echo ===
+echo WARN: total memory too high
+echo '#PBS -l select=1:ncpus=4,mem=90GB,walltime=0:10:00' | $qsub $project 2>&1 | grep INFO: || exit 1
+echo ===
+echo WARN: total memory too high
+$qsub $project -l select=1:ncpus=4,mem=90GB,walltime=0:10:00 < /dev/null 2>&1 | grep INFO: || exit 1
+echo ===
+echo FAIL: largemem and no memory specification
+echo '#PBS -q largemem' | $qsub -l walltime=0:01:00 $project && exit
+echo OK
+echo ===
+echo FAIL: largemem and no memory specification
+$qsub -l walltime=0:01:00 $project -q largemem < /dev/null && exit
+echo OK
+echo ===
+echo PASS: do not warn if largemem with  memory specification
+$qsub $project -q largemem -l walltime=0:01:00 -l select=1:ncpus=1:mem=100g < /dev/null || exit
+echo OK
+echo ===
+echo PASS: do not warn if largemem with  memory specification
+$qsub $project -q largemem -l walltime=0:01:00 -l mem=100g < /dev/null || exit
+echo OK
+echo ===
+echo WARN: node memory is 105gb
+echo true | $qsub $project -l walltime=0:01:00 -l select=1:ncpus=24:mem=105gb 2>&1 | grep INFO: || exit 1
+echo ===
+echo WARN: total memory is 105gb per node
+echo true | $qsub $project -l walltime=0:01:00 -l select=2:ncpus=24 -l mem=200gb 2>&1 | grep INFO: || exit 1
+echo ===
+echo PASS: large+long using model
+echo true | $qsub $project -l walltime=0:01:00 -l select=1:ncpus=24:mem=1024gb:model=rx4770m1 || exit
+echo OK
+echo ===
+echo PASS: job array on command line
+$qsub $project -l walltime=0:01:00 -J 0-2 < /dev/null || exit
+echo OK
+echo ===
+echo PASS: job array script
+$qsub $project case020.pbs || exit
+echo OK
+echo ===
+echo PASS: --version
+$qsub --version || exit
+echo OK
+echo ===
+echo PASS: commented out invalid specification
+echo '## PBS -l select=1:ncpus=10000' | $qsub -l walltime=0:01:00 $project || exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+echo '# PBS -l select=2:ncpus=20' | $qsub -l walltime=0:01:00 $project && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+echo '# PBS -l nodes=2:ppn=20' | $qsub -l walltime=0:01:00 $project && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+echo '# PBS -l nodes=2:ncpus=20' | $qsub -l walltime=0:01:00 $project && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+$qsub $project -l walltime=0:01:00 -l select=2:ncpus=20 < /dev/null && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+$qsub $project -l walltime=0:01:00 -l nodes=2:ppn=20 < /dev/null && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+$qsub $project -l walltime=0:01:00 -l nodes=2:ncpus=20 < /dev/null 2>&1 && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+echo '# PBS -l select=2:ncpus=12' | $qsub -l walltime=0:01:00 $project && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+echo '# PBS -l nodes=2:ppn=12' | $qsub -l walltime=0:01:00 $project && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+$qsub $project -l walltime=0:01:00 -l select=2:ncpus=12 < /dev/null 2>&1 && exit
+echo OK
+echo ===
+echo FAIL: multiple partial nodes
+$qsub $project -l walltime=0:01:00 -l nodes=2:ppn=12 < /dev/null 2>&1 && exit
+echo OK
+# echo ===
+# echo FAIL: incorrect project id
+# $qsub -l walltime=0:01:00 -P 00000001 < /dev/null 2>&1 && exit
+# echo ===
+# echo FAIL: incorrect project id
+# echo '#PBS -P 19999999' | $qsub -l walltime=0:01:00 2>&1 && exit
+# echo OK
+echo ===
+if [ 1 -eq 1 ] ; then
+echo WARN: no project id
+$qsub -l walltime=0:01:00 < /dev/null 2>&1 | grep "INFO:" || exit
+echo OK
+echo ===
+fi
+echo PASS: no project id
+$qsub -l walltime=0:01:00 -- true || exit
+echo OK
+echo ===
+echo PASS: Personal project
+$qsub -l walltime=0:01:00 -P Personal < /dev/null 2>&1 || exit
+echo OK
+echo ===
+echo PASS: do not warn if specifying a project id on command line
+$qsub -l walltime=0:01:00 -P Personal < /dev/null 2>&1 | grep "INFO:" && exit
+echo OK
+echo ===
+echo PASS: do not warn if specifying a project id in script
+echo ' #PBS -P Personal' | $qsub -l walltime=0:01:00 2>&1 | grep "INFO:" && exit
+echo OK
+echo ===
+echo PASS: -z
+$qsub -z -P Personal -l walltime=0:01:00 -- true || exit
+echo OK
+echo ===
+echo PASS: 9x24 in largemem
+$qsub -P Personal -q largemem -l select=9:ncpus=24:mem=500gb -N deleteme -l walltime=0:01:00 -- true || exit
+echo OK
+echo ===
+echo FAIL: 10x24 in largemem
+$qsub -P Personal -q largemem -l select=10:ncpus=24:mem=500gb -N deleteme -l walltime=0:01:00 -- true && exit
+echo OK
+echo ===
+echo PASS: 6x48 in largemem
+$qsub -P Personal -q largemem -l select=6:ncpus=48:mem=500gb -N deleteme -l walltime=0:01:00 -- true || exit
+echo OK
+echo ===
+echo FAIL: 9x48 in largemem
+$qsub -P Personal -q largemem -l select=9:ncpus=48:mem=500gb -N deleteme -l walltime=0:01:00 -- true && exit
+echo OK
+echo ===
+echo STDOUT/STDERR: dos formatted input
+$qsub dos.pbs 2>&1 | egrep -v '(^[[:space:]]*#PBS|^[[:space:]]*$|^INFO:|^[0-9]*\.wlm01$)' | grep . && exit
+echo OK
+echo ===
+echo ALL OK

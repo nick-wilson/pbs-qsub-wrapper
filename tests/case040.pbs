@@ -1,0 +1,7 @@
+#!/bin/bash
+#PBS -l walltime=12:00:00
+#PBS -j oe
+#PBS -N case040
+#PBS -l nodes=4:ppn=6
+#PBS -l mem=400GB
+true

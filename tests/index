@@ -1,0 +1,25 @@
+case000 PASS dev: 1 core for 1 minute
+case001 PASS dev: 1 core for 1 minute, no memory specification
+case010 PASS should FAIL due to total core count
+case020 PASS Job array
+case040 PASS should FAIL due to mem/core, uses old ppn format, separate memory line
+
+
+./qsub -l select=1:ncpus=25 < /dev/null # FAIL
+echo '#PBS -l select=1:ncpus=25,walltime=0:10:00' | ./qsub # FAIL
+echo '#PBS -l select=1:ncpus=25,walltime=0:10:00' | ./qsub -l select=1:ncpus=24 # PASS
+
+./qsub --usage -I # PASS
+./qsub --help # FAIL
+
+
+Queue            Memory CPU Time Walltime Node   Run   Que   Lm  State
+---------------- ------ -------- -------- ---- ----- ----- ----  -----
+long               --      --    120:00:0  --     26    30   --   E R
+gpulong            --      --    240:00:0  --     30     3   --   E R
+small             105gb    --    24:00:00  --    442  3060   --   E R
+medium             --      --    24:00:00  --     46   402   --   E R
+gpunormal          --      --    24:00:00  --     53    50   --   E R
+largemem           --      --    24:00:00  --      1     1   --   E R
+q4                 --      --    24:00:00  --      4    20   --   E R
+q1                 --      --    24:00:00  --    118   284   --   E R
