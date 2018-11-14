@@ -1,8 +1,8 @@
-= PBS qsub wrapper =
+* PBS qsub wrapper *
 
 This script performs some checks on PBS job scripts to reject jobs with known errors or jobs which break site policy.
 
-It contains site-specific settings and so is more suitable as a basis for implementing your own solution than as an out-of-the-box solution.
+It contains site-specific settings and therefore is more suitable as a basis for implementing your own solution than as an out-of-the-box solution.
 
 Requirements:
 1. Drop-in replacement for the standard qsub command (either behave as expected or reject the job with a non-zero exit code).
