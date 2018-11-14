@@ -9,9 +9,9 @@ Requirements:
 2. Error or warning messages are always sent to standard error.
 
 The idea for a script like this one will normally be phrased something like:
- "We just need to write a simple wrapper which checks the user's job script and passes it to the actual qsub command"
+ "We just need to write a simple wrapper which checks the user's job script and passes it to the actual qsub command."
 On the surface this seems an eminently sensible idea which will be very easy to implement.
-when writing the wrapper it will soon become apparent that there are lots of things which need to be considered.
+When writing the wrapper it will soon become apparent that there are lots of things which need to be considered.
 These include but are not limited to:
 1. You have to replicate the parsing of every possible command line option to find the ones that you're actually interested in.
 2. Job scripts can be submitted as a file, on the standard input or as an argument passed on the command line.
@@ -19,3 +19,5 @@ These include but are not limited to:
 4. There are multiple ways of specifying resources or units.
 5. There is an option for qsub to block and wait for the job to finish before returning.
 6. Check that the filters don't break if people submit job scripts in Windows text format.
+
+An alternative method would be to use a PBS hook instead. This would make a lot of these checks much easier and should be used where possible. However it is not possible to send customized qsub error messages to the user when using PBS hooks.
