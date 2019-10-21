@@ -10,7 +10,7 @@ if [ $inform_maintenance -eq 1 ] ; then
  echo 1>&2
 fi
 
-# Location of actual qsub command
+# Location of qsub, override this in pbs modulefile if necessary
 QSUB_COMMAND="${QSUB_COMMAND:-/opt/pbs/bin/qsub}"
 
 # Pass through some common options
@@ -23,10 +23,10 @@ elif [ x"$1" == x--usage ] ; then
 fi
 
 # some script settings:
-#  directory to capture script information in case needed when debugging user tickets
+#  directory to capture script information
 script_store=/home/app/.qsub/log
 #  temporary file to capture stdin
-###tmpfile="${TMPDIR:-/tmp}/qsub.$LOGNAME.$$" # TODO: add check that TMPDIR directory actually exists and is writeable
+###tmpfile="${TMPDIR:-/tmp}/qsub.$LOGNAME.$$"
 tmpfile="/tmp/qsub.$LOGNAME.$$"
 tmpscript="/tmp/qsub.unix.$LOGNAME.$$"
 # error messages
@@ -44,7 +44,7 @@ ngpus=""
 
 cleanup_exit () {
  rm -f "$tmpfile" "$tmpscript"
- rm -f /home/app/pbs/.cache/"$LOGNAME".* > /dev/null 2>&1
+ timeout 10 rm -f /home/app/pbs/.cache/"$LOGNAME".* > /dev/null 2>&1
  exit ${1:-0}
 }
 
@@ -204,6 +204,18 @@ fi
 
 projectarg=""
 if [ $job_has_project -eq 0 ] ; then
+ if [ x"$PROJECT" != x ] ; then
+      job_has_project=1
+      projectid="$PROJECT"
+      projectarg="-P $PROJECT"
+ elif [ x"$project" != x ] ; then
+      job_has_project=1
+      projectid="$project"
+      projectarg="-P $project"
+ fi
+fi
+
+if [ $job_has_project -eq 0 ] ; then
  warn_projectid=1
  if [ $warn_projectid -eq 1  ] ; then
   echo 1>&2
@@ -217,8 +229,6 @@ if [ $job_has_project -eq 0 ] ; then
   echo 'INFO: submitting job...' 1>&2
   echo 1>&2
  fi
- #Uncomment line to force project id onto command line. Not required as done by a PBS hook.
- #projectarg="-PPersonal"
 else
  # Job has a project id. Check that it is either empty, Personal or an 8 digit number which is a valid group
  # Disable check which is now done by AMS
@@ -272,6 +282,10 @@ if [ "$queue" == largemem ] ; then
 elif [ "${queue:0:2}" == fj ] ; then
  maxcpus=40
  maxgpus=8
+ echo 1>&2
+ echo 'ERROR: This queue has been removed.' 1>&2
+ echo 'ERROR: Please use the queues dgx or dgx-dev instead.' 1>&2
+ echo 1>&2
 elif [ "$queue" == datathon ] ; then
  maxcpus=40
  maxgpus=8
@@ -444,10 +458,28 @@ if [ x"$mem_v" != x ] ; then
      echo INFO: submitting job... 1>&2
      echo 1>&2
     fi # mem_c
+   elif [ x"$queue" = xgpu ] ; then
+    # 96GB is 103079215104 but default is 105Gb which is 112742891520
+    # if [ $mem_v -gt 103079215104 ] ; then
+    if [ $mem_v -gt 112742891520 ] ; then
+      echo ERROR: mem=$mem_v_actual 1>&2
+      echo ERROR: You have requested more than 96GB of memory in a node in the gpu queue 1>&2
+      echo ERROR: There are no nodes where this job can run, job rejected 1>&2
+      cleanup_exit 1
+    elif [ $mem_v -gt 103079215104 ] ; then
+     echo INFO: You have requested more than 96GB of memory in a node in the gpu queue. 1>&2
+     echo INFO: This is more than the value defined by NSCC policy of 4GB per core. 1>&2
+     echo INFO: In some circumstances this can cause the node to run out of memory. 1>&2
+     echo INFO: In future we highly recommend setting a memory limit of 96GB per gpu node. 1>&2
+     echo INFO: submitting job... 1>&2
+     echo 1>&2
+    fi # mem_v
    fi # queue
   fi # mem_v numeric
  fi # model
 fi # mem_v
+
+
 
 # check total memory
 if [ x"$mem_t" != x ] ; then
@@ -555,7 +587,7 @@ fi
 
 if [ x"$jobid" == x ] ; then jobid=noid.`date +%s` ; fi
 
-# copy script in case needed when debugging user tickets
+# copy script for accounting
 if [ -e "$script" ] ; then
  cp "$script" "$script_store/$jobid.$LOGNAME" > /dev/null 2>&1
  chmod go-rwx "$script_store/$jobid.$LOGNAME" > /dev/null 2>&1
