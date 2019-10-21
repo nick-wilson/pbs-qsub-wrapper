@@ -108,78 +108,78 @@ if [ $interactive -eq 0 ] ; then
  # look for ncpus in job script
  if [ x"$ncpus" = x ] ; then
   if [ -e "$tmpscript" ] ; then
-   if egrep -- "^ *# *PBS .*nodes=.*:ppn=" $tmpscript > /dev/null ; then
-    ncpus=`egrep -- "^ *# *PBS .*nodes=.*:ppn=" $tmpscript | tail -n 1 | sed -e 's/^.*ppn=//' -e 's/[:,].*//'`
+   if egrep -- "^ *#PBS .*nodes=.*:ppn=" $tmpscript > /dev/null ; then
+    ncpus=`egrep -- "^ *#PBS .*nodes=.*:ppn=" $tmpscript | tail -n 1 | sed -e 's/^.*ppn=//' -e 's/[:,].*//'`
    fi
-   if egrep -- "^ *# *PBS .*ncpus" $tmpscript > /dev/null ; then
-    ncpus=`egrep -- "^ *# *PBS .*ncpus" $tmpscript | tail -n 1 | sed -e 's/^.*ncpus=//' -e 's/[:,].*//'`
+   if egrep -- "^ *#PBS .*ncpus" $tmpscript > /dev/null ; then
+    ncpus=`egrep -- "^ *#PBS .*ncpus" $tmpscript | tail -n 1 | sed -e 's/^.*ncpus=//' -e 's/[:,].*//'`
    fi
   fi
  fi
  # look for ngpus in job script
  if [ x"$ngpus" = x ] ; then
   if [ -e "$tmpscript" ] ; then
-   if egrep -- "^ *# *PBS .*ngpus" $tmpscript > /dev/null ; then
-    ngpus=`egrep -- "^ *# *PBS .*ngpus" $tmpscript | tail -n 1 | sed -e 's/^.*ngpus=//' -e 's/[:,].*//'`
+   if egrep -- "^ *#PBS .*ngpus" $tmpscript > /dev/null ; then
+    ngpus=`egrep -- "^ *#PBS .*ngpus" $tmpscript | tail -n 1 | sed -e 's/^.*ngpus=//' -e 's/[:,].*//'`
    fi
   fi
  fi
  # look for vnodes in job script
  if [ x"$vnodes" = x ] ; then
   if [ -e "$tmpscript" ] ; then
-   if egrep -- "^ *# *PBS .*nodes" $tmpscript > /dev/null ; then
-    vnodes=`egrep -- "^ *# *PBS .*nodes" $tmpscript | tail -n 1 | sed -e 's/^.*nodes=//' -e 's/[:,].*//'`
+   if egrep -- "^ *#PBS .*nodes" $tmpscript > /dev/null ; then
+    vnodes=`egrep -- "^ *#PBS .*nodes" $tmpscript | tail -n 1 | sed -e 's/^.*nodes=//' -e 's/[:,].*//'`
    fi
-   if egrep -- "^ *# *PBS .*select" $tmpscript > /dev/null ; then
-    vnodes=`egrep -- "^ *# *PBS .*select" $tmpscript | tail -n 1 | sed -e 's/^.*select=//' -e 's/[:,].*//'`
+   if egrep -- "^ *#PBS .*select" $tmpscript > /dev/null ; then
+    vnodes=`egrep -- "^ *#PBS .*select" $tmpscript | tail -n 1 | sed -e 's/^.*select=//' -e 's/[:,].*//'`
    fi
   fi
  fi
  # look for mpiprocs in job script
  if [ x"$mpiprocs" = x ] ; then
   if [ -e "$tmpscript" ] ; then
-   if egrep -- "^ *# *PBS .*mpiprocs" $tmpscript > /dev/null ; then
-    mpiprocs=`egrep -- "^ *# *PBS .*mpiprocs" $tmpscript | sed -e 's/^.*mpiprocs=//' -e 's/[:,].*//'`
+   if egrep -- "^ *#PBS .*mpiprocs" $tmpscript > /dev/null ; then
+    mpiprocs=`egrep -- "^ *#PBS .*mpiprocs" $tmpscript | sed -e 's/^.*mpiprocs=//' -e 's/[:,].*//'`
    fi
   fi
  fi
  # look for memory in job script
  if [ x"$mem_v$mem_t" = x ] ; then
   if [ -e "$tmpscript" ] ; then
-   if egrep -- '^ *# *PBS .*select[^,]*mem' $tmpscript > /dev/null ; then
-    mem_v=`egrep -- '^ *# *PBS .*select[^,]*mem *=' $tmpscript | tail -1 |  sed -e 's/^.*mem *=//' -e 's/[:,].*//'`
+   if egrep -- '^ *#PBS .*select[^,]*mem' $tmpscript > /dev/null ; then
+    mem_v=`egrep -- '^ *#PBS .*select[^,]*mem *=' $tmpscript | tail -1 |  sed -e 's/^.*mem *=//' -e 's/[:,].*//'`
    fi
-   if egrep -- '^ *# *PBS .*-l([^,]*,| *)mem *=' $tmpscript > /dev/null ; then
-    mem_t=`egrep -- '^ *# *PBS .*-l([^,]*,| *)mem *=' $tmpscript  | tail -1 |  sed -e 's/^.*mem *=//' -e 's/[:,].*//'`
+   if egrep -- '^ *#PBS .*-l([^,]*,| *)mem *=' $tmpscript > /dev/null ; then
+    mem_t=`egrep -- '^ *#PBS .*-l([^,]*,| *)mem *=' $tmpscript  | tail -1 |  sed -e 's/^.*mem *=//' -e 's/[:,].*//'`
    fi
   fi
  fi
  # look for model in job script
  if [ x"$model" = x ] ; then
   if [ -e "$tmpscript" ] ; then
-   if egrep -- '^ *# *PBS .*select[^,]*model' $tmpscript > /dev/null ; then
-    model=`egrep -- '^ *# *PBS .*select[^,]*model' $tmpscript | sed -e 's/^.*model *=//' -e 's/[:,].*//'`
+   if egrep -- '^ *#PBS .*select[^,]*model' $tmpscript > /dev/null ; then
+    model=`egrep -- '^ *#PBS .*select[^,]*model' $tmpscript | sed -e 's/^.*model *=//' -e 's/[:,].*//'`
    fi
   fi
  fi
  # look for queue in job script
  if [ x"$queue" = x ] ; then
   if [ -e "$tmpscript" ] ; then
-   if egrep -- "^ *# *PBS .*-q" $tmpscript > /dev/null ; then
-    queue=`egrep -- "^ *# *PBS .*-q" $tmpscript | sed -e 's,^.*-q,,' -e 's,^ *,,' -e 's/[, ].*//'`
+   if egrep -- "^ *#PBS .*-q" $tmpscript > /dev/null ; then
+    queue=`egrep -- "^ *#PBS .*-q" $tmpscript | sed -e 's,^.*-q,,' -e 's,^ *,,' -e 's/[, ].*//'`
    fi
   fi
  fi
  # look for PBS -l place=excl
  if [ -e "$script" ] ; then
-  if egrep -- "^ *# *PBS *-l.*place *=.*excl" $tmpscript 1>&2 ; then
+  if egrep -- "^ *#PBS *-l.*place *=.*excl" $tmpscript 1>&2 ; then
     echo ERROR: $error_msg_place_excl 1>&2
     cleanup_exit 1
   fi
  fi
  # warn about -l nodes=X:ppn=Y
  if [ -e "$tmpscript" ] ; then
-  if grep -- "^ *# *PBS *-l.*nodes *=.*ppn *=" $tmpscript 1>&2 ; then
+  if grep -- "^ *#PBS *-l.*nodes *=.*ppn *=" $tmpscript 1>&2 ; then
     echo INFO: $warning_ppn 1>&2
   fi
  fi
@@ -187,16 +187,16 @@ fi
 
 # check job script for job array
 if [ -e "$tmpscript" ] ; then
- if grep -- "^ *# *PBS *-J" $tmpscript > /dev/null 2>&1 ; then job_is_array=1 ; fi
+ if grep -- "^ *#PBS *-J" $tmpscript > /dev/null 2>&1 ; then job_is_array=1 ; fi
 fi
 
 # check project id
 if [ $job_has_project -eq 0 ] ; then
  if [ -e "$tmpscript" ] ; then
   if [ $interactive -eq 0 ] ; then
-   if egrep -- "^ *# *PBS .*-P" "$tmpscript" > /dev/null ; then
+   if egrep -- "^ *#PBS .*-P" "$tmpscript" > /dev/null ; then
     job_has_project=1
-    projectid=`egrep -- "^ *# *PBS .*-P" $tmpscript | tail -1 | sed -e 's,^.*-P *,,' -e 's, .*,,' -e 's,-.*,,'`
+    projectid=`egrep -- "^ *#PBS .*-P" $tmpscript | tail -1 | sed -e 's,^.*-P *,,' -e 's, .*,,' -e 's,-.*,,'`
    fi
   fi
  fi
@@ -541,7 +541,7 @@ fi # mem_t
 
 # check for faulty stdout or stderr
 if [ -e "$tmpscript" ] ; then
- _x=`egrep '^[[:space:]]*#[[:space:]]*PBS -(o|e) (~|\$)' "$tmpscript"`
+ _x=`egrep '^[[:space:]]*#PBS -(o|e) (~|\$)' "$tmpscript"`
  if [ x"$_x" != x ] ; then
   echo 1>&2
   echo 'WARNING: You appear to be using the syntax of either a ~ or $ with #PBS -o or #PBS -e' 1>&2

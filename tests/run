@@ -100,19 +100,19 @@ $qsub --version || exit
 echo OK
 echo ===
 echo PASS: commented out invalid specification
-echo '## PBS -l select=1:ncpus=10000' | $qsub -l walltime=0:01:00 $project || exit
+echo '##PBS -l select=1:ncpus=10000' | $qsub -l walltime=0:01:00 $project || exit
 echo OK
 echo ===
 echo FAIL: multiple partial nodes
-echo '# PBS -l select=2:ncpus=20' | $qsub -l walltime=0:01:00 $project && exit
+echo '#PBS -l select=2:ncpus=20' | $qsub -l walltime=0:01:00 $project && exit
 echo OK
 echo ===
 echo FAIL: multiple partial nodes
-echo '# PBS -l nodes=2:ppn=20' | $qsub -l walltime=0:01:00 $project && exit
+echo '#PBS -l nodes=2:ppn=20' | $qsub -l walltime=0:01:00 $project && exit
 echo OK
 echo ===
 echo FAIL: multiple partial nodes
-echo '# PBS -l nodes=2:ncpus=20' | $qsub -l walltime=0:01:00 $project && exit
+echo '#PBS -l nodes=2:ncpus=20' | $qsub -l walltime=0:01:00 $project && exit
 echo OK
 echo ===
 echo FAIL: multiple partial nodes
@@ -128,11 +128,11 @@ $qsub $project -l walltime=0:01:00 -l nodes=2:ncpus=20 < /dev/null 2>&1 && exit
 echo OK
 echo ===
 echo FAIL: multiple partial nodes
-echo '# PBS -l select=2:ncpus=12' | $qsub -l walltime=0:01:00 $project && exit
+echo '#PBS -l select=2:ncpus=12' | $qsub -l walltime=0:01:00 $project && exit
 echo OK
 echo ===
 echo FAIL: multiple partial nodes
-echo '# PBS -l nodes=2:ppn=12' | $qsub -l walltime=0:01:00 $project && exit
+echo '#PBS -l nodes=2:ppn=12' | $qsub -l walltime=0:01:00 $project && exit
 echo OK
 echo ===
 echo FAIL: multiple partial nodes
